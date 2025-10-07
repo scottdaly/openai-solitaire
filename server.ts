@@ -1,3 +1,4 @@
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
 import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -342,13 +343,17 @@ app.use(express.json());
 
 // Minimal MCP over HTTP handler
 app.post("/mcp", async (req, res) => {
-  try {
-    const result = await server.handleRequest(req.body);
-    res.json(result);
-  } catch (e) {
-    res.status(500).json({ error: String(e) });
-  }
+  // one transport per HTTP request
+  const transport = new StreamableHTTPServerTransport({
+    enableJsonResponse: true,            // return JSON (great for curl tests)
+    // sessionIdGenerator: () => crypto.randomUUID(), // optional: custom session IDs
+  });
+
+  res.on("close", () => transport.close());
+
+  await server.connect(transport);               // wire MCP server ↔ transport
+  await transport.handleRequest(req, res, req.body); // let transport handle this HTTP req
 });
 
-const PORT = process.env.PORT || 8787;
-app.listen(PORT, () => console.log(`Solitaire MCP server on http://localhost:${PORT}/mcp`));
+const PORT = parseInt(process.env.PORT || "8787", 10);
+app.listen(PORT, () => console.log(`MCP on http://127.0.0.1:${PORT}/mcp`));
