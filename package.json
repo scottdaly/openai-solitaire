@@ -1,0 +1,21 @@
+{
+    "name": "chatgpt-apps-sdk-solitaire",
+    "private": true,
+    "type": "module",
+    "scripts": {
+    "build:ui": "esbuild web/solitaire.ts --bundle --format=esm --outfile=web/dist/solitaire.js",
+    "build": "npm run build:ui",
+    "start": "tsx server.ts",
+    "dev": "npm run build && tsx server.ts"
+  },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.0",
+        "express": "^4.19.2",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "esbuild": "^0.23.1",
+        "tsx": "^4.20.6",
+        "typescript": "^5.6.3"
+    }
+}
